@@ -1,2 +1,2 @@
 # PatriTrack
-Aplicação web para gerenciamento de patrimônio de ativos, utilizando python
+Aplicação web para gerenciamento de patrimônio e ativos, utilizando python
