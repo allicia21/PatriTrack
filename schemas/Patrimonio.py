@@ -1,16 +1,16 @@
 from pydantic import BaseModel
 from typing import List
-from app.models.Patrimonio import Patrimonio
+from models.Patrimonio import Patrimonio
 
 
 class PatrimonioSchema(BaseModel):
     """ Define como um novo produto a ser inserido deve ser representado
     """
-    nome: str = "Notebook"
-    descricao: str = "Notebook Dell para Analista"
-    categoria: int = 2
-    situacao: str = "Em uso"
-    data_aquisicao: str = "2021-01-01"
+    nome: str = "notebook"
+    descricao: str = "notebook dell"
+    categoria: int = 1
+    situacao: str = "novo" 
+    data_aquisicao: str = "2021-10-10"
 
 
 class PatrimonioBuscaSchema(BaseModel):
@@ -23,17 +23,35 @@ class PatrimonioBuscaSchema(BaseModel):
 class ListagemPatrimoniosSchema(BaseModel):
     """ Define como uma listagem de produtos será retornada.
     """
-    Patrimonio:List[PatrimonioSchema]
+    patrimonios:List[PatrimonioSchema]
+
+
+def apresenta_patrimonios(patrimonios: List[Patrimonio]):
+    """ Retorna uma representação do patrimonio seguindo o schema definido em
+        PatrimonioViewSchema.
+    """
+    result = []
+    for Patrimonio in patrimonios:
+        result.append({
+            "nome": Patrimonio.nome,
+            "descricao": Patrimonio.descricao,
+            "categoria": Patrimonio.categoria,
+            "situacao": Patrimonio.situacao,
+            "data_aquisicao": Patrimonio.data_aquisicao
+        })
+
+    return {"patrimonios": result}
 
 
 class PatrimonioViewSchema(BaseModel):
-    """ Define como um produto será retornado: produto + comentários.
+    """ Define como um patrimonio será retornado: patrimonios.
     """
+    id: int = 1
     nome: str = "Notebook"
-    descricao: str = "Notebook Dell para Analista"
-    categoria: int = 2
-    situacao: str = "Em uso"
-    data_aquisicao: str = "2021-01-01"
+    descricao: str = "notebook dell analista"
+    categoria: int = 1
+    situacao: str = "novo"
+    data_aquisicao: str = "2021-10-10"
 
 class PatrimonioDelSchema(BaseModel):
     """ Define como deve ser a estrutura do dado retornado após uma requisição
@@ -44,7 +62,7 @@ class PatrimonioDelSchema(BaseModel):
 
 def apresenta_patrimonio(patrimonio: Patrimonio):
     """ Retorna uma representação do produto seguindo o schema definido em
-        ProdutoViewSchema.
+        PatrimonioViewSchema.
     """
     return {
         "id": patrimonio.id,
@@ -52,4 +70,5 @@ def apresenta_patrimonio(patrimonio: Patrimonio):
         "descricao": patrimonio.descricao,
         "categoria": patrimonio.categoria,
         "situacao": patrimonio.situacao,
-        "data_aquisicao": patrimonio.data_aquisicao}
+        "data_aquisicao": patrimonio.data_aquisicao
+    }
