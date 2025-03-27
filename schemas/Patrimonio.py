@@ -4,8 +4,8 @@ from models.Patrimonio import Patrimonio
 
 
 class PatrimonioSchema(BaseModel):
-    """ Define como um novo produto a ser inserido deve ser representado
-    """
+    """ Define como um novo patrimonio ou ativo a ser inserido, deve ser representado."""
+
     nome: str = "notebook"
     descricao: str = "notebook dell"
     categoria: int = 1
@@ -15,13 +15,16 @@ class PatrimonioSchema(BaseModel):
 
 class PatrimonioBuscaSchema(BaseModel):
     """ Define como deve ser a estrutura que representa a busca. Que será
-        feita apenas com base no nome do produto.
-    """
-    nome: str = "Teste"
+        feita apenas com base no nome do patrimonio. """
+    id: int = 1
 
+class PatrimonioAtualizaSchema(BaseModel):
+
+    id: int = 1
+    situacao: str = "insira  a nova situação"
 
 class ListagemPatrimoniosSchema(BaseModel):
-    """ Define como uma listagem de produtos será retornada.
+    """ Define como uma listagem de patrimonios será retornada.
     """
     patrimonios:List[PatrimonioSchema]
 
@@ -51,7 +54,7 @@ class PatrimonioViewSchema(BaseModel):
     descricao: str = "notebook dell analista"
     categoria: int = 1
     situacao: str = "novo"
-    data_aquisicao: str = "2021-10-10"
+    data_aquisicao: str = "2025-03-25"
 
 class PatrimonioDelSchema(BaseModel):
     """ Define como deve ser a estrutura do dado retornado após uma requisição
@@ -61,7 +64,7 @@ class PatrimonioDelSchema(BaseModel):
     nome: str
 
 def apresenta_patrimonio(patrimonio: Patrimonio):
-    """ Retorna uma representação do produto seguindo o schema definido em
+    """ Retorna uma representação do patrimonio seguindo o schema definido em
         PatrimonioViewSchema.
     """
     return {

@@ -1,5 +1,5 @@
 from flask_openapi3 import OpenAPI, Info, Tag
-from flask import redirect
+from flask import jsonify, redirect, request
 from urllib.parse import unquote
 
 from sqlalchemy.exc import IntegrityError
@@ -7,32 +7,33 @@ from sqlalchemy.exc import IntegrityError
 from models._init_ import Session, Patrimonio
 from flask_cors import CORS
 
-from schemas.Patrimonio import ListagemPatrimoniosSchema, PatrimonioBuscaSchema, PatrimonioDelSchema, PatrimonioSchema, PatrimonioViewSchema, apresenta_patrimonio, apresenta_patrimonios
+from schemas.Patrimonio import ListagemPatrimoniosSchema, PatrimonioAtualizaSchema, PatrimonioBuscaSchema, PatrimonioDelSchema, PatrimonioSchema, PatrimonioViewSchema, apresenta_patrimonio, apresenta_patrimonios
 from schemas.erro import ErrorSchema
+
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 info = Info(title="Minha API", version="1.0.0")
 app = OpenAPI(__name__, info=info)
 CORS(app)
 
-# definindo tags
 home_tag = Tag(name="Documentação", description="Seleção de documentação: Swagger, Redoc ou RapiDoc")
 patrimonio_tag = Tag(name="Patrimonio", description="Adição, visualização e remoção de patriminio à base")
 
 
 @app.get('/', tags=[home_tag])
 def home():
-    """Redireciona para /openapi, tela que permite a escolha do estilo de documentação.
-    """
+    """Redireciona para /openapi, tela que permite a escolha do estilo de documentação."""
+
     return redirect('/openapi')
 
 
-@app.post('/patrimonio', tags=[patrimonio_tag],
+@app.post('/cadastrarPatrimonio', tags=[patrimonio_tag],
           responses={"200": PatrimonioViewSchema, "409": ErrorSchema, "400": ErrorSchema})
 def add_patrimonio(form: PatrimonioSchema):
-    """Adiciona um novo Patrimonio à base de dados
+    """Adiciona um novo Patrimonio à base de dados."""
 
-    Retorna uma representação dos patrimonios.
-    """
     patrimonio = Patrimonio(
         nome=form.nome,
         descricao=form.descricao,
@@ -43,36 +44,34 @@ def add_patrimonio(form: PatrimonioSchema):
         session = Session()
         # adicionando patrimonio
         session.add(patrimonio)
-        # efetivando o camando de adição de novo item na tabela
-        session.commit()
-        return apresenta_patrimonio(patrimonio), 200
 
     except IntegrityError as e:
         # como a duplicidade do nome é a provável razão do IntegrityError
-        error_msg = "Patrimonio de mesmo nome já salvo na base :/"
+        error_msg = "Patrimonio de mesmo nome já salvo na base."
         return {"mesage": error_msg}, 409
+    
+    if not patrimonio:
+        return {"message": "Não foi possível salvar novo item."}, 400
+         
+    # efetivando a inserção
+    session.commit()
 
-    except Exception as e:
-        # caso um erro fora do previsto
-        error_msg = "Não foi possível salvar novo item :/"
-        return {"mesage": error_msg}, 400                   
+    return apresenta_patrimonio(patrimonio), 200             
 
 
 @app.get('/buscarPatrimonios', tags=[patrimonio_tag],
          responses={"200": ListagemPatrimoniosSchema, "404": ErrorSchema})
 def get_patrimonios():
-    """Faz a busca por todos os patrimonios cadastrados
+    """Faz a busca por todos os patrimonios cadastrados na base de dados."""
 
-    Retorna uma representação da listagem de patrimonios.
-    """
     # criando conexão com a base
     session = Session()
     # fazendo a busca
     patrimonios = session.query(Patrimonio).all()
 
     if not patrimonios:
-        # se não há produtos cadastrados
-        return {"produtos": []}, 200
+        # se não há patrimonios cadastrados
+        return {"patrimonios": []}, 200
     else:
         # retorna a representação de produto
         print(patrimonios)
@@ -82,44 +81,76 @@ def get_patrimonios():
 @app.get('/patrimonioById', tags=[patrimonio_tag],
          responses={"200": PatrimonioViewSchema, "404": ErrorSchema})
 def get_produto(query: PatrimonioBuscaSchema):
-    """Faz a busca por um Patrimonio a partir do id do patrimonio
+    """Faz a busca por um Patrimonio a partir do id do patrimonio."""
 
-    Retorna uma representação dos patrimonios.
-    """
-    patrimonio_nome = query.nome
+    patrimonio_id = query.id
     # criando conexão com a base
     session = Session()
     # fazendo a busca
-    patrimonio = session.query(Patrimonio).filter(Patrimonio.nome == patrimonio_nome).first()
+    patrimonio = session.query(Patrimonio).filter(Patrimonio.id == patrimonio_id).first()
 
     if not patrimonio:
         # se o patrimonio não for encontrado
-        error_msg = "patrimonio não encontrado na base :/"
+        error_msg = "patrimonio não encontrado."
         return {"mesage": error_msg}, 404
     else:
-        # retorna a representação de produto
+        # retorna a representação de um patrimonio
         return apresenta_patrimonio(patrimonio), 200
 
 
-@app.delete('/DeletePatrimonio', tags=[patrimonio_tag],
+@app.delete('/deletePatrimonio', tags=[patrimonio_tag],
             responses={"200": PatrimonioDelSchema, "404": ErrorSchema})
-def del_patrimonio(query: PatrimonioBuscaSchema):
-    """Deleta um Patrimonio a partir do nome de um patrimonio informado
+def del_patrimonio(form: PatrimonioBuscaSchema):
+    """Deleta um Patrimonio a partir do id informado"""
 
-    Retorna uma mensagem de confirmação da remoção.
-    """
-    patrimonio_nome = unquote(unquote(query.nome))
-    print(patrimonio_nome)
     # criando conexão com a base
     session = Session()
-    # fazendo a remoção
-    count = session.query(Patrimonio).filter(Patrimonio.nome == patrimonio_nome).delete()
+
+    patrimonio = session.query(Patrimonio).filter(Patrimonio.id == form.id).first()
+
+    if not patrimonio:
+        return {"message": "Patrimônio não encontrado."}, 404
+    
+    print(patrimonio.nome)
+
+    session.delete(patrimonio) 
+
+    # efetivando a remoção
     session.commit()
 
-    if count:
-        # retorna a representação da mensagem de confirmação
-        return {"mesage": "Patrimonio removido", "id": patrimonio_nome}, 200
-    else:
-        # se o produto não foi encontrado
-        error_msg = "Patrimonio não encontrado na base :/"
-        return {"mesage": error_msg}, 404
+    return {"message": "Patrimônio deletado com sucesso."}, 200
+
+
+@app.put('/atualizarPatrimonio', tags=[patrimonio_tag],
+         responses={"200": PatrimonioViewSchema, "404": ErrorSchema, "400": ErrorSchema})
+def update_situacao(form: PatrimonioAtualizaSchema):
+    """Atualiza a situação de um patrimônio na base de dados."""
+
+    try:
+        # Criando conexão com a base
+        session = Session()
+
+        # Buscando o patrimônio pelo ID
+        patrimonio = session.query(Patrimonio).filter(Patrimonio.id == form.id).first()
+
+        # Verificando se o patrimônio foi encontrado
+        if not patrimonio:
+            return {"message": "Patrimônio não encontrado."}, 404
+
+        # Atualizando a situação do patrimônio
+        patrimonio.situacao = form.situacao
+
+        # Salvando as alterações
+        session.commit()
+
+        # Retornando a representação atualizada do patrimônio
+        return apresenta_patrimonio(patrimonio), 200
+    
+    except Exception as e:
+        # Capturando o erro e logando a exceção completa
+        logging.error(f"Erro ao atualizar a situação do patrimônio: {str(e)}")
+
+        # Caso algum erro aconteça
+        error_msg = "Não foi possível atualizar a situação do patrimônio."
+        return {"message": error_msg, "error": str(e)}, 400
+
