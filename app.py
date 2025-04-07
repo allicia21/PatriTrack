@@ -100,13 +100,15 @@ def get_produto(query: PatrimonioBuscaSchema):
 
 @app.delete('/deletePatrimonio', tags=[patrimonio_tag],
             responses={"200": PatrimonioDelSchema, "404": ErrorSchema})
-def del_patrimonio(form: PatrimonioBuscaSchema):
-    """Deleta um Patrimonio a partir do id informado"""
+def del_patrimonio(query: PatrimonioBuscaSchema):
+    """Deleta um Patrimonio a partir do nome informado"""
 
+    patrimonio_nome = unquote(unquote(query.nome))
+    print(patrimonio_nome)
     # criando conexão com a base
     session = Session()
 
-    patrimonio = session.query(Patrimonio).filter(Patrimonio.id == form.id).first()
+    patrimonio = session.query(Patrimonio).filter(Patrimonio.nome == query.nome).first()
 
     if not patrimonio:
         return {"message": "Patrimônio não encontrado."}, 404

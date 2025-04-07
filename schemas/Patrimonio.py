@@ -16,6 +16,10 @@ class PatrimonioSchema(BaseModel):
 class PatrimonioBuscaSchema(BaseModel):
     """ Define como deve ser a estrutura que representa a busca. Que será
         feita apenas com base no nome do patrimonio. """
+    nome: str = "notebook dell"
+
+class PatrimonioBuscaSchema(BaseModel):
+    """ Define como deve ser a estrutura que representa a busca feita pelo id do patrimonio. """
     id: int = 1
 
 class PatrimonioAtualizaSchema(BaseModel):
