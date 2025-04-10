@@ -6,11 +6,11 @@ from models.Patrimonio import Patrimonio
 class PatrimonioSchema(BaseModel):
     """ Define como um novo patrimonio ou ativo a ser inserido, deve ser representado."""
 
-    nome: str = "notebook"
-    descricao: str = "notebook dell 01"
-    categoria: int = 1
-    situacao: str = "novo" 
-    data_aquisicao: str = "2021-10-10"
+    nome: str = ""
+    descricao: str = ""
+    categoria: int = 3
+    situacao: str = ""
+    data_aquisicao: str = ""
 
 
 class PatrimonioBuscaSchemaDelete(BaseModel):
@@ -53,11 +53,11 @@ class PatrimonioViewSchema(BaseModel):
     """ Define como um patrimonio será retornado: patrimonios.
     """
     id: int = 1
-    nome: str = "Notebook"
-    descricao: str = "notebook dell analista"
-    categoria: int = 1
-    situacao: str = "novo"
-    data_aquisicao: str = "2025-03-25"
+    nome: str 
+    descricao: str 
+    categoria: int 
+    situacao: str 
+    data_aquisicao: str = "2025-04-10"
 
 class PatrimonioDelSchema(BaseModel):
     """ Define como deve ser a estrutura do dado retornado após uma requisição
