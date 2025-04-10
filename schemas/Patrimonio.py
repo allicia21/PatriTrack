@@ -7,16 +7,15 @@ class PatrimonioSchema(BaseModel):
     """ Define como um novo patrimonio ou ativo a ser inserido, deve ser representado."""
 
     nome: str = "notebook"
-    descricao: str = "notebook dell"
+    descricao: str = "notebook dell 01"
     categoria: int = 1
     situacao: str = "novo" 
     data_aquisicao: str = "2021-10-10"
 
 
-class PatrimonioBuscaSchema(BaseModel):
-    """ Define como deve ser a estrutura que representa a busca. Que será
-        feita apenas com base no nome do patrimonio. """
-    nome: str = "notebook dell"
+class PatrimonioBuscaSchemaDelete(BaseModel):
+    """ Define como deve ser a estrutura que representa a busca com o nome do patrimonio. """
+    nome: str = "notebook"
 
 class PatrimonioBuscaSchema(BaseModel):
     """ Define como deve ser a estrutura que representa a busca feita pelo id do patrimonio. """
@@ -25,7 +24,7 @@ class PatrimonioBuscaSchema(BaseModel):
 class PatrimonioAtualizaSchema(BaseModel):
 
     id: int = 1
-    situacao: str = "insira  a nova situação"
+    situacao: str = ""
 
 class ListagemPatrimoniosSchema(BaseModel):
     """ Define como uma listagem de patrimonios será retornada.

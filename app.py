@@ -7,14 +7,14 @@ from sqlalchemy.exc import IntegrityError
 from models._init_ import Session, Patrimonio
 from flask_cors import CORS
 
-from schemas.Patrimonio import ListagemPatrimoniosSchema, PatrimonioAtualizaSchema, PatrimonioBuscaSchema, PatrimonioDelSchema, PatrimonioSchema, PatrimonioViewSchema, apresenta_patrimonio, apresenta_patrimonios
+from schemas.Patrimonio import ListagemPatrimoniosSchema, PatrimonioAtualizaSchema, PatrimonioBuscaSchema, PatrimonioBuscaSchemaDelete, PatrimonioDelSchema, PatrimonioSchema, PatrimonioViewSchema, apresenta_patrimonio, apresenta_patrimonios
 from schemas.erro import ErrorSchema
 
 import logging
 
 logging.basicConfig(level=logging.INFO)
 
-info = Info(title="Minha API", version="1.0.0")
+info = Info(title="API para Gerencimento de Patrimonios", version="1.0.0")
 app = OpenAPI(__name__, info=info)
 CORS(app)
 
@@ -100,7 +100,7 @@ def get_produto(query: PatrimonioBuscaSchema):
 
 @app.delete('/deletePatrimonio', tags=[patrimonio_tag],
             responses={"200": PatrimonioDelSchema, "404": ErrorSchema})
-def del_patrimonio(query: PatrimonioBuscaSchema):
+def del_patrimonio(query: PatrimonioBuscaSchemaDelete):
     """Deleta um Patrimonio a partir do nome informado"""
 
     patrimonio_nome = unquote(unquote(query.nome))
