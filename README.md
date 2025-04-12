@@ -1,4 +1,5 @@
 # PatriTrack
+MVP da primeira sprint da pós graduação de engenharia de softare da PUC-RIO.
 Api para gerenciamento de patrimônio e ativos, utilizando python
 
 ## Como executar 
